@@ -7,9 +7,10 @@ using WebCamService;
 using System.Net.Sockets;
 
 namespace ImgCapture
-{
+{    
     public class WebCamServer
     {
+        const int PORT = 10;
         bool run = true;
         protected Thread serverThread = null;
         public ImgCapturer ImgCap { get; set; }
@@ -20,16 +21,15 @@ namespace ImgCapture
             ImgCap.Init();
         }
 
-
-
         private void StartServer()
         {
 
-            TcpListener tcpListener = new TcpListener(10);
+            TcpListener tcpListener = new TcpListener(PORT);
             tcpListener.Start();  
+            ImageSocketHandler ish = new ImageSocketHandler(ImgCap);
             while (run)
             {
-                new ImageSocketHandler(ImgCap, tcpListener.AcceptSocket());
+                new SocketWriter(ish,tcpListener.AcceptSocket());               
             }
         }
 
@@ -40,7 +40,7 @@ namespace ImgCapture
             serverThread.Start();
         }
 
-        public void OnStop()
+        public void Stop()
         {            
             serverThread.Abort();
         }
